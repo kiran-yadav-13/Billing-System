@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -186,3 +187,8 @@ button:focus-visible {
     @apply bg-background text-foreground;
   }
 }
+=======
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+>>>>>>> 4b2066f6bbc9e71da1330a42238295e30c673f7c
