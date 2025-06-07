@@ -4,40 +4,29 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const UserSchema = new mongoose.Schema({
-  name: 
-  { type: String, 
-    required: true, 
-    unique: true 
-},
-  password: { 
-    type: String, 
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    auto: true
+  },
+  name: {
+    type: String,
     required: true
-   }, // hashed password
-
-gstin: {
-  type: String,
-  required: true,
-  unique:true,
-},
-
-  address: { 
-    type: String, 
-    required: true 
   },
-
-  contactNumber: { 
-    type: String, 
-    required: true 
+  email: {
+    type: String,
+    required: true,
+    unique: true
   },
-
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true },
-},
-{
-    timestamps: true,
-  });
+  password: {
+    type: String,
+    required: true
+  },
+  role: {
+    type: String,
+    enum: ['admin', 'user'],
+    default: 'user'
+  }
+}, { timestamps: true });
 
   
 // Hashing password before saving-
