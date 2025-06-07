@@ -1,21 +1,17 @@
-import { useState } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import './index.css'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './index.css';
 import Signin from './pages/Signin';
-
+import BusinessProfile from './pages/Profile'; 
 
 function App() {
-
   return (
-    <>
-     <Router>
+    <Router>
       <Routes>
         <Route path="/signin" element={<Signin />} />
-        {/* other routes */}
+        <Route path="/profile" element={<BusinessProfile />} />
       </Routes>
-      </Router>
-
-    </>
-  )}
+    </Router>
+  );
+}
 
 export default App;
