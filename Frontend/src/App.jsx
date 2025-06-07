@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './index.css'
-import { Button } from "@/components/ui/button"
-import Signin from '@/pages/signin'
+import Signin from './pages/Signin';
+
 
 function App() {
 
@@ -17,3 +17,5 @@ function App() {
 
     </>
   )}
+
+export default App;

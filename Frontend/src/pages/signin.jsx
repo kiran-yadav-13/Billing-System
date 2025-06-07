@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-export default function CardDemo() {
+export default function Signin() {
   return (
     <div className="flex items-center justify-center min-h-screen">
         <Card className="w-full max-w-sm">
