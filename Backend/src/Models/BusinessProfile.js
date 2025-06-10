@@ -1,37 +1,32 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const businessProfileSchema = new mongoose.Schema({
-  profileId: {
-    type: mongoose.Schema.Types.ObjectId,
-    auto: true,
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    unique: true
-  },
+const BusinessProfileSchema = new mongoose.Schema({
   businessName: {
     type: String,
-    required: true
+    required: true,
   },
   gstNumber: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   address: {
     type: String,
-    required: true
+    required: true,
   },
   contactNumber: {
     type: String,
-    required: true
+    required: true,
   },
   logoUrl: {
     type: String,
-    default: ''
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('BusinessProfile', businessProfileSchema);
+module.exports = mongoose.model("BusinessProfile", BusinessProfileSchema);
+

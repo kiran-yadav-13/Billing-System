@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../Models/User");
 
-const  auth= async (req, res, next) => {
+exports.auth= async (req, res, next) => {
   try {
     const token = req.cookies.token;
 
@@ -16,5 +16,12 @@ const  auth= async (req, res, next) => {
     res.status(401).json({ success: false, error: "Not authorized" });
   }
 };
+// Role-based access (only for admin)
+exports.adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ success: false, error: "Access denied: Admins only" });
+  }
+};
 
-module.exports = auth;
