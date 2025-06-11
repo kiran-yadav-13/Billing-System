@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../Models/User");
 const BusinessProfile = require("../Models/BusinessProfile");
+const { registerUserSchema, loginUserSchema, updateUserSchema } = require("../validators/userValidators");
 
 // Generate JWT token
 const generateToken = (userId) => {
@@ -13,11 +14,20 @@ const generateToken = (userId) => {
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ success: false, error: "All fields are required" });
+    const parsed=registerUserSchema.safeParse(req.body);
+    if(!parsed.success){
+      return res.status(400).json({
+        success:false,
+        error: parsed.error.flatten().fieldErrors,
+      });
     }
+    //const { name, email, password, role } = req.body;
+
+    const { name, email, password, role } = parsed.data;
+
+    // if (!name || !email || !password || !role) {
+    //   return res.status(400).json({ success: false, error: "All fields are required" });
+    // }
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -51,12 +61,19 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-   
-    if (!email || !password) {
-      return res.status(400).json({ success: false, error: "Email and password are required" });
+    const parsed=loginUserSchema.safeParse(req.body);
+    if(!parsed.success){
+      return res.status(400).json({
+        sucess:false,
+        error: parsed.error.flatten().fieldErrors,
+      })
     }
+    //const { email, password } = req.body;
+    const { email, password } = parsed.data;
+   
+    // if (!email || !password) {
+    //   return res.status(400).json({ success: false, error: "Email and password are required" });
+    // }
 
     const user = await User.findOne({ email });
 
@@ -143,15 +160,17 @@ exports.logout = (req, res) => {
 //  Add staff user (Admin only)
 exports.addUser = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, error: "Access denied" });
+   
+    const parsed=registerUserSchema.safeParse(req.body);
+    if(!parsed.sucess){
+      return res.status(400).json({
+        sucess:false,
+        error:parsed.error.flatten().fieldErrors,
+      });
     }
+   
 
-    const { name, email, password, role } = req.body;
-
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ success: false, error: "All fields are required" });
-    }
+    const { name, email, password, role } = parsed.data;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -191,25 +210,44 @@ exports.getAllUsers = async (req, res) => {
 //  Update user (Admin only)
 exports.updateUser = async (req, res) => {
   try {
-    //const user=await User.findById(req.user._id)
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, error: "Access denied" });
-    }
+    const userId = req.params.id;
 
-    const { id } = req.params;
-    const { name, email, role } = req.body;
-
-    user = await User.findByIdAndUpdate(
-      id,
-      { name, email, role },
-      { new: true }
-    ).select("-password");
-
-    if (!user) {
+    const existingUser = await User.findById(userId);
+    if (!existingUser) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
+    const parsed=updateUserSchema.safeParse(req.body);
+    if(!parsed.success){
+      return res.status(400).json({
+        success:false,
+        error: parsed.error.flatten().fieldErrors,
+      });
+    }
+    //const { name, email, password, role } = req.body;
 
-    res.json({ success: true, message: "User updated", user });
+    const { name, email, password, role } = parsed.data;
+
+    // Update only the fields that are provided in the request
+    if (name) existingUser.name = name;
+    if (email) existingUser.email = email;
+    if (role) existingUser.role = role;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      existingUser.password = await bcrypt.hash(password, salt);
+    }
+
+    const updatedUser = await existingUser.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+      },
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -218,9 +256,6 @@ exports.updateUser = async (req, res) => {
 // @desc Delete user (Admin only)
 exports.deleteUser = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, error: "Access denied" });
-    }
 
     const { id } = req.params;
 

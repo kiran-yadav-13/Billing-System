@@ -1,5 +1,6 @@
 const BusinessProfile = require("../Models/BusinessProfile");
 const User = require("../Models/User");
+const businessProfileSchema = require("../validators/businessValidators");
 
 //  Create business profile (admin only)
 exports.createBusinessProfile = async (req, res) => {
@@ -7,15 +8,23 @@ exports.createBusinessProfile = async (req, res) => {
     const user = req.user;
 
     // Only admin can create business profile
-    if (user.role !== "admin") {
-      return res.status(403).json({ success: false, error: "Only admins can create business profiles" });
+    // if (user.role !== "admin") {
+    //   return res.status(403).json({ success: false, error: "Only admins can create business profiles" });
+    // }
+    
+    const parsed=businessProfileSchema.safeParse(req.body);
+    if(!parsed.success){
+      return res.status(400).json({
+        success:false,
+        error:parsed.error.flatten().fieldErrors
+      });
     }
+    //const { businessName, gstNumber, address, contactNumber, logoUrl } = req.body;
+    const { businessName, gstNumber, address, contactNumber, logoUrl } = parsed.data;
 
-    const { businessName, gstNumber, address, contactNumber, logoUrl } = req.body;
-
-    if (!businessName || !gstNumber || !address || !contactNumber) {
-      return res.status(400).json({ success: false, error: "All required fields must be filled" });
-    }
+    // if (!businessName || !gstNumber || !address || !contactNumber) {
+    //   return res.status(400).json({ success: false, error: "All required fields must be filled" });
+    // }
 
     
     const gstExists = await BusinessProfile.findOne({ gstNumber });
