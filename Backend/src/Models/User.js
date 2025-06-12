@@ -4,10 +4,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const UserSchema = new mongoose.Schema({
-  // userId: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   auto: true
-  // },
   name: {
     type: String,
     required: true
@@ -22,12 +18,12 @@ const UserSchema = new mongoose.Schema({
     required: true
   },
   role: { 
-    type: String, enum: ['admin', 'staff'], 
-    default: 'staff' 
+    type: String, enum: ['owner','admin', 'staff'], 
+    default: 'staff'
   },
   businessId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'BusinessProfile' // Linking user to a business
+    ref: 'BusinessProfile'
   }
 }, { timestamps: true });
 

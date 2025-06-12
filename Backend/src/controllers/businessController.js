@@ -1,14 +1,17 @@
 const BusinessProfile = require("../Models/BusinessProfile");
 const User = require("../Models/User");
 
-//  Create business profile (admin only)
+
 exports.createBusinessProfile = async (req, res) => {
   try {
     const user = req.user;
 
-    // Only admin can create business profile
-    if (user.role !== "admin") {
-      return res.status(403).json({ success: false, error: "Only admins can create business profiles" });
+    // Only owner can create business profile
+    if (user.role !== "owner") {
+      return res.status(403).json({ success: false, error: "Only owner can create business profiles" });
+    }
+    if(user.businessId){
+      return res.status(403).json({success: false, error: "Business Profile already existed"})
     }
 
     const { businessName, gstNumber, address, contactNumber, logoUrl } = req.body;

@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const User = require("../Models/User");
 const BusinessProfile = require("../Models/BusinessProfile");
 
-// Generate JWT token
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "1d",
@@ -25,16 +24,8 @@ exports.register = async (req, res) => {
     }
 
     const user = new User({ name, email, password, role });
-    await user.save(); // triggers pre-save hook for hashing
-
-    const token = user.generateToken(); // using instance method
-
+    await user.save(); 
     res
-      .cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 24 * 60 * 60 * 1000,
-      })
       .status(201)
       .json({
         success: true,
@@ -45,70 +36,36 @@ exports.register = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-// @desc Login user
-// @route POST /api/users/login
 
 
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-   
     if (!email || !password) {
       return res.status(400).json({ success: false, error: "Email and password are required" });
     }
 
     const user = await User.findOne({ email });
 
-    // If user not found or password is incorrect
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ success: false, error: "Invalid credentials" });
     }
 
     const token = user.generateToken();
 
-    // Default redirect path
-    let redirect = "/dashboard";
-
-    // If no businessId and user is admin → needs to create business profile
-    if (!user.businessId && user.role === "admin") {
-      redirect = "/createBusinessProfile";
-    }
-
-    // If user has a businessId, check if business profile actually exists
-    if (user.businessId) {
-      const businessProfile = await BusinessProfile.findById(user.businessId);
-      
-      if (!businessProfile) {
-        if (user.role === "admin") {
-          redirect = "/createBusinessProfile"; // allow to create again
-        } else {
-          return res.status(400).json({
-            success: false,
-            error: "staff Assigned business profile does not exist",
-          });
-        }
-      }
-    }
-
-    // Final response
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 24 * 60 * 60 * 1000,
-      })
-      .json({
-        success: true,
-        message: "Login successful",
-        user: {
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          businessId: user.businessId || null,
-        },
-        redirect,
-      });
+    // Send token in response body instead of cookie
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        businessId: user.businessId || null,
+      },
+    });
 
   } catch (error) {
     console.error("Login error:", error.message);
@@ -117,9 +74,6 @@ exports.login = async (req, res) => {
 };
 
 
-
-// @desc Get logged-in user + business profile
-// @route GET /api/users/profile
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -131,22 +85,9 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-
-
-exports.logout = (req, res) => {
-  res.clearCookie("token").json({ success: true, message: "Logged out successfully" });
-};
-
-
-
-
 //  Add staff user (Admin only)
 exports.addUser = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, error: "Access denied" });
-    }
-
     const { name, email, password, role } = req.body;
 
     if (!name || !email || !password || !role) {
@@ -192,10 +133,6 @@ exports.getAllUsers = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     //const user=await User.findById(req.user._id)
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, error: "Access denied" });
-    }
-
     const { id } = req.params;
     const { name, email, role } = req.body;
 

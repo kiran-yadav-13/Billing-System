@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import useRedirectIfAuthenticated from "@/hooks/useRedirectIfAuthenticated"
 
 // Menu items
 const items = [
@@ -21,6 +22,7 @@ const items = [
 ];
 
 export default function AppSidebar() {
+   useRedirectIfAuthenticated()
   return (
     <Sidebar>
       <SidebarContent>

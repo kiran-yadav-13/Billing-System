@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 export default function BusinessProfile() {
   const [profile, setProfile] = useState({
@@ -10,6 +11,10 @@ export default function BusinessProfile() {
     logoURL: ''
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile(prev => ({
@@ -18,11 +23,32 @@ export default function BusinessProfile() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(profile);
-    alert('Profile saved!');
-    // You can send this data to backend using fetch/axios
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/business/createprofile`,
+        profile,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      setSuccess('Profile saved successfully!');
+      console.log(response.data);
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || 'Failed to save profile');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,15 +84,6 @@ export default function BusinessProfile() {
         />
         <input
           type="text"
-          name="profileID"
-          placeholder="Profile ID"
-          value={profile.profileID}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="text"
           name="contactNumber"
           placeholder="Contact Number"
           value={profile.contactNumber}
@@ -82,17 +99,22 @@ export default function BusinessProfile() {
           onChange={handleChange}
           className="w-full p-2 border rounded"
         />
+
         {profile.logoURL && (
-  <img src={profile.logoURL} alt="Business Logo" className="h-20 mt-2 mx-auto" />
-)}
+          <img src={profile.logoURL} alt="Business Logo" className="h-20 mt-2 mx-auto" />
+        )}
+
+        {error && <p className="text-sm text-red-500">{error}</p>}
+        {success && <p className="text-sm text-green-500">{success}</p>}
 
         <button
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          disabled={loading}
         >
-          Save Profile
+          {loading ? 'Saving...' : 'Save Profile'}
         </button>
       </form>
     </div>
   );
-}  
+}
