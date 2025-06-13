@@ -55,15 +55,16 @@ export default function BusinessProfile() {
     <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold mb-4 text-center">Business Profile</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          name="businessName"
-          placeholder="Business Name"
-          value={profile.businessName}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
+       <input
+  type="text"
+  name="businessName"
+  placeholder="Business Name"
+  value={profile.businessName}
+  onChange={handleChange}
+  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+  required
+/>
+
         <input
           type="text"
           name="gstNumber"
