@@ -30,5 +30,7 @@ const businessProfileSchema = z.object({
     .url({ message: "Logo must be a valid URL" })
     .optional(),
 });
-
-module.exports = businessProfileSchema;
+const updatebusinessSchema = businessProfileSchema.partial();
+module.exports ={ businessProfileSchema,
+  updatebusinessSchema
+};
