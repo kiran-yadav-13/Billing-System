@@ -1,5 +1,6 @@
 const BusinessProfile = require("../Models/BusinessProfile");
 const User = require("../Models/User");
+const businessProfileSchema = require("../validators/businessValidators");
 
 
 exports.createBusinessProfile = async (req, res) => {
@@ -13,12 +14,12 @@ exports.createBusinessProfile = async (req, res) => {
     if(user.businessId){
       return res.status(403).json({success: false, error: "Business Profile already existed"})
     }
+    //const { businessName, gstNumber, address, contactNumber, logoUrl } = req.body;
+    const { businessName, gstNumber, address, contactNumber, logoUrl } = parsed.data;
 
-    const { businessName, gstNumber, address, contactNumber, logoUrl } = req.body;
-
-    if (!businessName || !gstNumber || !address || !contactNumber) {
-      return res.status(400).json({ success: false, error: "All required fields must be filled" });
-    }
+    // if (!businessName || !gstNumber || !address || !contactNumber) {
+    //   return res.status(400).json({ success: false, error: "All required fields must be filled" });
+    // }
 
     
     const gstExists = await BusinessProfile.findOne({ gstNumber });

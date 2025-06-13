@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../Models/User");
 const BusinessProfile = require("../Models/BusinessProfile");
+const { registerUserSchema, loginUserSchema, updateUserSchema } = require("../validators/userValidators");
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -12,11 +13,20 @@ const generateToken = (userId) => {
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ success: false, error: "All fields are required" });
+    const parsed=registerUserSchema.safeParse(req.body);
+    if(!parsed.success){
+      return res.status(400).json({
+        success:false,
+        error: parsed.error.flatten().fieldErrors,
+      });
     }
+    //const { name, email, password, role } = req.body;
+
+    const { name, email, password, role } = parsed.data;
+
+    // if (!name || !email || !password || !role) {
+    //   return res.status(400).json({ success: false, error: "All fields are required" });
+    // }
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -130,34 +140,61 @@ exports.getAllUsers = async (req, res) => {
 };
 
 //  Update user (Admin only)
-exports.updateUser = async (req, res) => {
-  try {
-    //const user=await User.findById(req.user._id)
-    const { id } = req.params;
-    const { name, email, role } = req.body;
+// exports.updateUser = async (req, res) => {
+//   try {
+//     //const user=await User.findById(req.user._id)
+//     const { id } = req.params;
+//     const { name, email, role } = req.body;
 
-    user = await User.findByIdAndUpdate(
-      id,
-      { name, email, role },
-      { new: true }
-    ).select("-password");
+//     user = await User.findByIdAndUpdate(
+//       id,
+//       { name, email, role },
+//       { new: true }
+//     ).select("-password");
 
-    if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
-    }
+//     if (!user) {
+//       return res.status(404).json({ success: false, error: "User not found" });
+//     }
+//     const parsed=updateUserSchema.safeParse(req.body);
+//     if(!parsed.success){
+//       return res.status(400).json({
+//         success:false,
+//         error: parsed.error.flatten().fieldErrors,
+//       });
+//     }
+//     //const { name, email, password, role } = req.body;
 
-    res.json({ success: true, message: "User updated", user });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-};
+//     const { name, email, password, role } = parsed.data;
+
+//     // Update only the fields that are provided in the request
+//     if (name) existingUser.name = name;
+//     if (email) existingUser.email = email;
+//     if (role) existingUser.role = role;
+//     if (password) {
+//       const salt = await bcrypt.genSalt(10);
+//       existingUser.password = await bcrypt.hash(password, salt);
+//     }
+
+//     const updatedUser = await existingUser.save();
+
+//     res.status(200).json({
+//       success: true,
+//       message: "User updated successfully",
+//       user: {
+//         _id: updatedUser._id,
+//         name: updatedUser.name,
+//         email: updatedUser.email,
+//         role: updatedUser.role,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, error: error.message });
+//   }
+// };
 
 // @desc Delete user (Admin only)
 exports.deleteUser = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ success: false, error: "Access denied" });
-    }
 
     const { id } = req.params;
 
