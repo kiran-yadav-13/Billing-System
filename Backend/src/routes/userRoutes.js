@@ -3,7 +3,6 @@ const express = require("express");
 const {
   register,
   login,
-  logout,
   getProfile,
   addUser,
   getAllUsers,
@@ -16,7 +15,6 @@ const router = express.Router();
 
 router.post("/signup", register);
 router.post("/login", login);
-router.get("/logout", logout);
 router.get("/profile", auth, getProfile);
 
 // Admin-only routes to manage users

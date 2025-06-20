@@ -7,6 +7,7 @@ const itemRoutes=require('./src/routes/itemRoutes');
 const b2bCustomer=require('./src/routes/customerRoutes');
 const connectDB = require("./src/config/db");
 const transactionRoutes = require('./src/routes/transactionRoutes');
+const cors = require("cors");
 dotenv.config();
 connectDB();
 
@@ -14,6 +15,11 @@ const app = express();
 app.use(express.json());
 //app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true, // if using cookies or auth headers
+}));
 
 app.use("/api/users", userRoutes);
 app.use('/api/business', businessRoutes);

@@ -2,16 +2,17 @@ const BusinessProfile = require("../Models/BusinessProfile");
 const User = require("../Models/User");
 const {businessProfileSchema,updateBusinessProfile} = require("../validators/businessValidators");
 
-//  Create business profile (admin only)
+
 exports.createBusinessProfile = async (req, res) => {
   try {
     const user = req.user;
-    const parsed=businessProfileSchema.safeParse(req.body);
-    if(!parsed.success){
-      return res.status(400).json({
-        success:false,
-        error:parsed.error.flatten().fieldErrors
-      });
+
+    // Only owner can create business profile
+    if (user.role !== "owner") {
+      return res.status(403).json({ success: false, error: "Only owner can create business profiles" });
+    }
+    if(user.businessId){
+      return res.status(403).json({success: false, error: "Business Profile already existed"})
     }
     //const { businessName, gstNumber, address, contactNumber, logoUrl } = req.body;
     const { businessName, gstNumber, address, contactNumber, logoUrl } = parsed.data;
