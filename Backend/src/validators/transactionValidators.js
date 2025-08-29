@@ -1,37 +1,47 @@
-// validators/transactionValidator.js
+
 const { z } = require('zod');
 const mongoose = require('mongoose');
 
-// Custom validator for MongoDB ObjectId
 const objectId = z.string().refine(val => mongoose.Types.ObjectId.isValid(val), {
-  message: 'Invalid ObjectId',
+  message: 'Invalid ObjectId format',
 });
 
-// Regex patterns
-const nameRegex = /^[A-Za-z\s]{2,50}$/;
-const phoneRegex = /^[6-9]\d{9}$/; // Indian mobile numbers
-const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+const transactionValidator = z.object({
+  transactionType: z.enum(['buy', 'sell'], {
+    required_error: 'Transaction type is required',
+    invalid_type_error: 'Must be "buy" or "sell"',
+  }),
+  mode: z.enum(['b2b', 'b2c'], {
+    required_error: 'Mode must be b2b or b2c',
+  }),
+ 
 
-const transactionSchema = z.object({
-  transactionType: z.enum(['buy', 'sell']),
-  mode: z.enum(['b2b', 'b2c']),
-
+  // Optional if mode is b2b
   b2bCustomer: z.optional(objectId),
 
+  // Optional if mode is b2c
   b2cCustomer: z.optional(z.object({
-    name: z.string().regex(nameRegex, { message: 'Name must contain only letters and spaces' }),
-    contact: z.string().regex(phoneRegex, { message: 'Invalid contact number' }),
+    name: z.string()
+      .min(1, 'Name is required')
+      .regex(/^[A-Za-z ]+$/, 'Only alphabets and spaces allowed'),
+    contact: z.string()
+      .regex(/^[6-9]\d{9}$/, 'Invalid mobile number'),
+    age: z.optional(z.number().int().min(0, 'Min age 0').max(120, 'Max age 120')),
+    address: z.optional(z.string().max(200, 'Max 200 characters')),
+    doctorName: z.optional(z.string()
+      .max(100, 'Max 100 characters')),
   })),
 
   items: z.array(z.object({
     itemId: objectId,
-    quantity: z.number().min(1, { message: 'Quantity must be at least 1' }),
-    price: z.number().min(0, { message: 'Price cannot be negative' }),
-    gst: z.number().min(0).max(100, { message: 'GST must be between 0 and 100' }),
-    discount: z.number().min(0).max(100, { message: 'Discount must be between 0 and 100' }),
-  })).min(1, { message: 'At least one item is required' }),
+    batchId: objectId,
+    quantity: z.number()
+      .int({ message: 'Quantity must be integer' })
+      .positive({ message: 'Quantity must be positive' })
+      .lte(100000, { message: 'Quantity too large' }),
+  })).min(1, 'At least one item is required'),
 });
 
+module.exports = transactionValidator;
 
 
-module.exports = transactionSchema;

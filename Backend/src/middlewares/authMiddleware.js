@@ -8,14 +8,9 @@ app.use(express.json())
 
 exports.auth = async (req, res, next) => {
   try {
+    const token = req.cookies.token;
 
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ success: false, error: "Not authorized, token missing" });
-    }
-
-    const token = authHeader.split(" ")[1]; // Extract actual token from "Bearer <token>"
+    if (!token) throw new Error("Not authorized, token missing");
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -28,10 +23,10 @@ exports.auth = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error("Auth error:", error.message);
     res.status(401).json({ success: false, error: "Not authorized" });
   }
 };
+
 
 
 // Role-based access (only for admin)
